@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Local Image Search</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <h1>Local Image Search</h1>
+      <p class="tagline">Index and search your images with Vertex AI and ChromaDB</p>
+    </header>
+
+    <section class="section index-section">
+      <h2>Index images</h2>
+      <p class="hint">Folder path is relative to the server base (e.g. test_photos).</p>
+      <div class="form-row">
+        <input type="text" id="folderPath" value="test_photos" placeholder="Folder path">
+        <button type="button" id="indexBtn">Index images</button>
+      </div>
+      <p id="indexStatus" class="status" aria-live="polite"></p>
+    </section>
+
+    <section class="section search-section">
+      <h2>Search</h2>
+      <div class="search-tabs">
+        <button type="button" class="tab active" data-tab="text">Text search</button>
+        <button type="button" class="tab" data-tab="image">Search by image</button>
+      </div>
+      <div id="textSearchPanel" class="panel active">
+        <div class="form-row">
+          <input type="text" id="queryText" placeholder="Describe what you're looking for...">
+          <button type="button" id="searchTextBtn">Search</button>
+        </div>
+      </div>
+      <div id="imageSearchPanel" class="panel">
+        <div class="form-row">
+          <input type="file" id="queryImageFile" accept="image/*">
+          <button type="button" id="searchImageBtn">Search by image</button>
+        </div>
+      </div>
+      <p id="searchStatus" class="status" aria-live="polite"></p>
+    </section>
+
+    <section class="section results-section">
+      <h2>Results <span id="resultCount" class="result-count"></span></h2>
+      <div id="resultsGrid" class="results-grid"></div>
+    </section>
+  </div>
+  <script src="/app.js"></script>
+</body>
+</html>
