@@ -14,6 +14,7 @@ A local multimodal image search app: index images from a folder, then search by 
 - **Python 3.12** (3.10+ should work; the plan targets 3.12; Python 3.14 is not yet released).
 - A **Google Cloud service account** with Vertex AI enabled (JSON key file in the `key/` directory).
 - A GCP project with the Vertex AI API enabled.
+- **Windows only**: ChromaDB needs to build a native extension. Install [Microsoft C++ Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) (Visual Studio Build Tools, then select "Desktop development with C++" or the C++ build tools workload) so `pip install -r requirements.txt` can complete.
 
 ## Setup
 
@@ -47,9 +48,25 @@ A local multimodal image search app: index images from a folder, then search by 
 
 ## Run
 
-Start the backend (and frontend is served from the same process):
+Activate the venv, then start the backend (the frontend is served from the same process).
+
+**PowerShell (Windows):**
+
+```powershell
+.\env\Scripts\Activate.ps1
+.\run.ps1
+```
+
+Or in one go (no activation needed):
+
+```powershell
+.\env\Scripts\python.exe -m uvicorn api:app --reload --host 0.0.0.0 --port 8000
+```
+
+**macOS/Linux:**
 
 ```bash
+source env/bin/activate
 uvicorn api:app --reload --host 0.0.0.0 --port 8000
 ```
 
