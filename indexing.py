@@ -58,13 +58,17 @@ def index_folder(
 
     Returns:
         Number of images indexed.
+    
+    Raises:
+        ValueError: If folder path is invalid.
+        Exception: If embedding generation fails for all images.
     """
     folder = _resolve_folder_path(folder_path)
     image_paths = _collect_image_paths(folder)
     if not image_paths:
         if clear_first:
             clear_collection(collection_name=collection_name)
-        return 0
+        raise ValueError(f"No image files found in {folder_path}. Supported extensions: {', '.join(IMAGE_EXTENSIONS)}")
 
     if clear_first:
         clear_collection(collection_name=collection_name)
@@ -72,18 +76,33 @@ def index_folder(
     ids = []
     embeddings = []
     paths = []
+    errors = []
     for p in image_paths:
         path_str = str(p)
         doc_id = hashlib.sha256(path_str.encode()).hexdigest()[:32]
         try:
             emb = get_image_embedding(path_str, dimension=dimension)
-        except Exception:
+        except Exception as e:
+            errors.append(f"{path_str}: {str(e)}")
             continue
         ids.append(doc_id)
         embeddings.append(emb)
         paths.append(path_str)
+    
+    if errors:
+        import logging
+        logger = logging.getLogger(__name__)
+        for err in errors[:5]:  # Log first 5 errors
+            logger.warning(f"Failed to index image: {err}")
+        if len(errors) > 5:
+            logger.warning(f"... and {len(errors) - 5} more errors")
 
     if ids:
         add_images(ids=ids, embeddings=embeddings, paths=paths,
                    collection_name=collection_name)
+    else:
+        if errors:
+            error_msg = f"Failed to generate embeddings for all {len(image_paths)} images. "
+            error_msg += f"First error: {errors[0]}" if errors else ""
+            raise RuntimeError(error_msg)
     return len(ids)
