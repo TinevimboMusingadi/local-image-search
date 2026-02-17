@@ -5,6 +5,12 @@ from __future__ import annotations
 import tempfile
 from pathlib import Path
 
+# Stub ChromaDB default embedding function so onnxruntime is never loaded (avoids
+# DLL error on Windows). We use embedding_function=None and Vertex AI embeddings.
+from chromadb_embedding_stub import install_stub
+
+install_stub()
+
 from fastapi import FastAPI, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
