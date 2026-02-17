@@ -109,6 +109,32 @@ def stats(collection_name: str = Query("images")) -> dict:
     }
 
 
+@app.get("/debug/folder")
+def debug_folder(folder_path: str = Query("test_photos")) -> dict:
+    """Debug endpoint to check folder contents and image detection."""
+    from pathlib import Path
+    from config import get_base_path_resolved
+    from indexing import IMAGE_EXTENSIONS, _resolve_folder_path, _collect_image_paths
+    
+    try:
+        folder = _resolve_folder_path(folder_path)
+        image_paths = _collect_image_paths(folder)
+        all_files = list(folder.rglob("*"))
+        
+        return {
+            "folder_path": str(folder),
+            "exists": folder.exists(),
+            "is_dir": folder.is_dir(),
+            "total_files": len([f for f in all_files if f.is_file()]),
+            "image_files_found": len(image_paths),
+            "image_extensions": list(IMAGE_EXTENSIONS),
+            "sample_images": [str(p) for p in image_paths[:5]],
+            "base_path": str(get_base_path_resolved()),
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+
+
 @app.post("/index", response_model=IndexResponse)
 def index(request: IndexRequest) -> IndexResponse:
     """Index images in a folder into the default collection."""
@@ -118,8 +144,27 @@ def index(request: IndexRequest) -> IndexResponse:
             collection_name=request.collection_name,
             clear_first=True,
         )
+        if n == 0:
+            import logging
+            from pathlib import Path
+            from config import get_base_path_resolved
+            from indexing import IMAGE_EXTENSIONS
+            
+            logger = logging.getLogger(__name__)
+            base = get_base_path_resolved()
+            folder = base / request.folder_path if not Path(request.folder_path).is_absolute() else Path(request.folder_path)
+            if folder.exists() and folder.is_dir():
+                all_files = list(folder.rglob("*"))
+                image_files = [f for f in all_files if f.is_file() and f.suffix.lower() in IMAGE_EXTENSIONS]
+                logger.warning(f"Indexed 0 images from {request.folder_path}. Found {len(image_files)} image files but embeddings failed.")
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
+    except RuntimeError as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).exception("Unexpected error during indexing")
+        raise HTTPException(status_code=500, detail=f"Indexing failed: {str(e)}") from e
     return IndexResponse(indexed=n, collection_name=request.collection_name)
 
 
