@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Local Image Search</title>
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="header-content">
+        <div class="header-text">
+          <h1>🔍 Local Image Search</h1>
+          <p class="tagline">AI-powered image discovery with Vertex AI & ChromaDB</p>
+        </div>
+        <button id="themeToggle" class="theme-toggle" aria-label="Toggle theme">
+          <span class="theme-icon">🌙</span>
+        </button>
+      </div>
+    </header>
+
+    <div class="main-content">
+      <!-- Index Section -->
+      <section class="card index-card">
+        <div class="card-header">
+          <h2>📁 Index Images</h2>
+          <span id="indexedCount" class="badge">0 indexed</span>
+        </div>
+        <div class="card-body">
+          <p class="hint">Scan a folder and generate embeddings for all images</p>
+          <div class="input-group">
+            <input type="text" id="folderPath" value="test_photos" placeholder="test_photos" class="input">
+            <button type="button" id="indexBtn" class="btn btn-primary">
+              <span class="btn-icon">⚡</span>
+              <span class="btn-text">Index</span>
+            </button>
+          </div>
+          <div id="indexStatus" class="status" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <!-- Search Section -->
+      <section class="card search-card">
+        <div class="card-header">
+          <h2>🔎 Search</h2>
+        </div>
+        <div class="card-body">
+          <div class="search-tabs">
+            <button type="button" class="tab-btn active" data-tab="text">
+              <span class="tab-icon">💬</span>
+              <span>Text Search</span>
+            </button>
+            <button type="button" class="tab-btn" data-tab="image">
+              <span class="tab-icon">🖼️</span>
+              <span>Image Search</span>
+            </button>
+            <button type="button" class="tab-btn" data-tab="similar">
+              <span class="tab-icon">🔗</span>
+              <span>Find Similar</span>
+            </button>
+          </div>
+
+          <!-- Text Search Panel -->
+          <div id="textSearchPanel" class="panel active">
+            <div class="input-group">
+              <input type="text" id="queryText" placeholder="Describe what you're looking for..." class="input input-large">
+              <button type="button" id="searchTextBtn" class="btn btn-primary">
+                <span class="btn-icon">🔍</span>
+                <span class="btn-text">Search</span>
+              </button>
+            </div>
+            <div class="search-options">
+              <label class="option-label">
+                <span>Results:</span>
+                <select id="topKText" class="select">
+                  <option value="10">10</option>
+                  <option value="20" selected>20</option>
+                  <option value="50">50</option>
+                </select>
+              </label>
+            </div>
+          </div>
+
+          <!-- Image Upload Panel -->
+          <div id="imageSearchPanel" class="panel">
+            <div class="upload-area" id="uploadArea">
+              <input type="file" id="queryImageFile" accept="image/*" class="file-input">
+              <div class="upload-content">
+                <span class="upload-icon">📤</span>
+                <span class="upload-text">Drop an image or click to browse</span>
+                <span class="upload-hint">Supports JPG, PNG, WebP</span>
+              </div>
+              <div id="uploadPreview" class="upload-preview"></div>
+            </div>
+            <div class="input-group">
+              <button type="button" id="searchImageBtn" class="btn btn-primary btn-full">
+                <span class="btn-icon">🔍</span>
+                <span class="btn-text">Search by Image</span>
+              </button>
+            </div>
+            <div class="search-options">
+              <label class="option-label">
+                <span>Results:</span>
+                <select id="topKImage" class="select">
+                  <option value="10">10</option>
+                  <option value="20" selected>20</option>
+                  <option value="50">50</option>
+                </select>
+              </label>
+            </div>
+          </div>
+
+          <!-- Similar Search Panel -->
+          <div id="similarSearchPanel" class="panel">
+            <div class="input-group">
+              <input type="text" id="similarPath" placeholder="Path to indexed image (e.g. test_photos/image.jpg)" class="input input-large">
+              <button type="button" id="searchSimilarBtn" class="btn btn-primary">
+                <span class="btn-icon">🔗</span>
+                <span class="btn-text">Find Similar</span>
+              </button>
+            </div>
+            <div class="search-options">
+              <label class="option-label">
+                <span>Results:</span>
+                <select id="topKSimilar" class="select">
+                  <option value="10" selected>10</option>
+                  <option value="20">20</option>
+                  <option value="50">50</option>
+                </select>
+              </label>
+              <label class="option-label">
+                <span>Min Score:</span>
+                <input type="number" id="minScore" value="0.0" min="0" max="1" step="0.1" class="input input-small">
+              </label>
+            </div>
+          </div>
+
+          <div id="searchStatus" class="status" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <!-- Results Section -->
+      <section class="card results-card">
+        <div class="card-header">
+          <h2>📊 Results</h2>
+          <span id="resultCount" class="badge">0</span>
+        </div>
+        <div class="card-body">
+          <div id="resultsGrid" class="results-grid"></div>
+          <div id="emptyState" class="empty-state">
+            <span class="empty-icon">🖼️</span>
+            <p class="empty-text">No results yet. Start searching!</p>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
