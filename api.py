@@ -98,6 +98,17 @@ def health() -> dict:
     return {"status": "ok"}
 
 
+@app.get("/stats")
+def stats(collection_name: str = Query("images")) -> dict:
+    """Get collection statistics."""
+    count = collection_count(collection_name=collection_name)
+    return {
+        "collection_name": collection_name,
+        "total_images": count,
+        "embedding_dimension": 1408,
+    }
+
+
 @app.post("/index", response_model=IndexResponse)
 def index(request: IndexRequest) -> IndexResponse:
     """Index images in a folder into the default collection."""
@@ -136,6 +147,57 @@ def search_post(request: SearchRequest) -> SearchResponse:
     results = [
         SearchResultItem(path=h["path"], score=round(h["score"], 4), rank=i + 1)
         for i, h in enumerate(hits)
+    ]
+    return SearchResponse(results=results)
+
+
+class BatchSearchRequest(BaseModel):
+    """Request body for POST /search/batch."""
+
+    queries: list[str]
+    top_k: int = 10
+    collection_name: str = "images"
+
+
+@app.post("/search/batch", response_model=dict)
+def search_batch(request: BatchSearchRequest) -> dict:
+    """Batch search: multiple text queries at once."""
+    if not request.queries or len(request.queries) > 10:
+        raise HTTPException(status_code=400, detail="Provide 1-10 queries")
+    all_results = {}
+    for q in request.queries:
+        query_embedding = get_text_embedding(q)
+        hits = chroma_search(
+            query_embedding=query_embedding,
+            top_k=request.top_k,
+            collection_name=request.collection_name,
+        )
+        all_results[q] = [
+            {"path": h["path"], "score": round(h["score"], 4), "rank": i + 1}
+            for i, h in enumerate(hits)
+        ]
+    return {"queries": all_results}
+
+
+@app.get("/search/similar")
+def search_similar(
+    path: str = Query(...),
+    top_k: int = Query(10, ge=1, le=50),
+    min_score: float = Query(0.0, ge=0.0, le=1.0),
+    collection_name: str = Query("images"),
+) -> SearchResponse:
+    """Find images similar to a given indexed image path."""
+    safe_path = _safe_path_for_serving(path)
+    query_embedding = get_image_embedding(str(safe_path))
+    hits = chroma_search(
+        query_embedding=query_embedding,
+        top_k=top_k * 2,  # Get more to filter by min_score
+        collection_name=collection_name,
+    )
+    filtered = [h for h in hits if h["score"] >= min_score][:top_k]
+    results = [
+        SearchResultItem(path=h["path"], score=round(h["score"], 4), rank=i + 1)
+        for i, h in enumerate(filtered)
     ]
     return SearchResponse(results=results)
 
@@ -199,6 +261,8 @@ async def search_by_upload(
 
 
 # Serve frontend static files (mount after routes so /files and /search take precedence)
+# Optional: only mount if frontend/ directory exists (for backward compatibility)
+# The new Vite frontend runs independently on port 5173
 _frontend_dir = Path(__file__).resolve().parent / "frontend"
 if _frontend_dir.is_dir():
     app.mount("/", StaticFiles(directory=str(_frontend_dir), html=True), name="frontend")
