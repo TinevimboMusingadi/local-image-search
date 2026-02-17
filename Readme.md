@@ -48,7 +48,9 @@ A local multimodal image search app: index images from a folder, then search by 
 
 ## Run
 
-Activate the venv, then start the backend (the frontend is served from the same process).
+### Backend
+
+Activate the venv, then start the backend API server.
 
 **PowerShell (Windows):**
 
@@ -60,17 +62,79 @@ Activate the venv, then start the backend (the frontend is served from the same 
 Or in one go (no activation needed):
 
 ```powershell
-.\env\Scripts\python.exe -m uvicorn api:app --reload --host 0.0.0.0 --port 8000
+.\env\Scripts\python.exe -m uvicorn api:app --reload --host 127.0.0.1 --port 8000
 ```
 
 **macOS/Linux:**
 
 ```bash
 source env/bin/activate
-uvicorn api:app --reload --host 0.0.0.0 --port 8000
+uvicorn api:app --reload --host 127.0.0.1 --port 8000
 ```
 
-Then open **http://localhost:8000** in your browser.
+The backend API will run on **http://127.0.0.1:8000**.
+
+### Frontend (Vite)
+
+The frontend is a separate Vite project that can be built and run independently.
+
+**Setup:**
+
+1. Navigate to the frontend directory:
+   ```bash
+   cd frontend-vite
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Configure API URL (optional):
+   - Copy `.env.example` to `.env`:
+     ```bash
+     cp .env.example .env
+     ```
+   - Edit `.env` and set `VITE_API_URL` if your backend runs on a different URL (default: `http://127.0.0.1:8000`)
+
+**Development:**
+
+```bash
+npm run dev
+```
+
+This starts the Vite dev server on **http://localhost:5173** with hot module replacement. The dev server will automatically open your browser.
+
+**Production Build:**
+
+```bash
+npm run build
+```
+
+This creates an optimized production build in `frontend-vite/dist/`. You can serve it with any static file server or mount it in FastAPI.
+
+**Preview Production Build:**
+
+```bash
+npm run preview
+```
+
+### Running Both Together
+
+1. **Terminal 1** - Start the backend:
+   ```powershell
+   .\run.ps1
+   ```
+
+2. **Terminal 2** - Start the frontend:
+   ```powershell
+   cd frontend-vite
+   npm run dev
+   ```
+
+3. Open **http://localhost:5173** in your browser (the Vite dev server).
+
+**Note:** The old `frontend/` directory is still supported for backward compatibility. If it exists, the backend will serve it at `http://127.0.0.1:8000`. The new Vite frontend is recommended for development.
 
 1. **Index**: Enter a folder path (e.g. `test_photos`) and click **Index images**. The path is relative to the project root (or `IMAGE_BASE_PATH`).
 2. **Search**: Use **Text search** to type a query, or **Search by image** to upload an image and find similar indexed images.
@@ -79,20 +143,28 @@ Then open **http://localhost:8000** in your browser.
 ## API
 
 - `GET /health` – readiness (config and Chroma validated).
+- `GET /stats` – collection statistics (total images, embedding dimension).
 - `POST /index` – body: `{ "folder_path": "test_photos", "collection_name": "images" }`.
 - `GET /search?q=...&top_k=10` – text search.
 - `POST /search` – body: `{ "query_text": "...", "query_image_path": "...", "top_k": 10 }`.
 - `POST /search/by-image` – multipart file upload for image search.
+- `GET /search/similar?path=...&top_k=10&min_score=0.0` – find similar images by path.
+- `POST /search/batch` – batch search multiple queries.
 - `GET /files?path=...` – serve an indexed image (path must be under the base path).
 
 ## Project layout
 
-- `api.py` – FastAPI app (index, search, file serving, frontend mount).
+- `api.py` – FastAPI app (index, search, file serving, optional frontend mount).
 - `config.py` – env config and path validation.
 - `embedding.py` – Vertex AI multimodal embeddings (image and text).
 - `chroma_store.py` – ChromaDB persistent store.
 - `indexing.py` – folder scan and index pipeline.
-- `frontend/` – static HTML, CSS, JS.
+- `frontend/` – legacy static HTML, CSS, JS (optional, for backward compatibility).
+- `frontend-vite/` – Vite-based frontend project (recommended).
+  - `src/` – source files (app.js, styles.css, config.js, main.js).
+  - `index.html` – entry HTML.
+  - `vite.config.js` – Vite configuration.
+  - `package.json` – npm dependencies and scripts.
 - `key/` – GCP service account JSON (gitignored; add your own).
 - `context_file/embedding_context.md` – reference for Gemini/Vertex embeddings.
 
