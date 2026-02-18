@@ -41,7 +41,7 @@ A local multimodal image search app: index images from a folder, then search by 
      - `GOOGLE_APPLICATION_CREDENTIALS`: path to your GCP service account JSON (e.g. `key/rich-phenomenon-429412-t6-97496af05d96.json`).
      - `GCP_PROJECT_ID`: your GCP project ID.
      - `GCP_LOCATION`: Vertex AI region (e.g. `us-central1`).
-     - `CHROMA_PERSIST_DIR`: directory for ChromaDB data (default: `./chroma_data`).
+     - `CHROMA_PERSIST_DIR`: directory for ChromaDB data (default: user data dir, e.g. `%APPDATA%\LocalImageSearch\chroma_data` on Windows).
      - Optionally `IMAGE_BASE_PATH`: base path for indexing and serving images (default: project root).
 
    Do **not** commit `.env` or the contents of `key/`; they are listed in `.gitignore`.
@@ -136,6 +136,17 @@ npm run preview
 
 **Note:** The old `frontend/` directory is still supported for backward compatibility. If it exists, the backend will serve it at `http://127.0.0.1:8000`. The new Vite frontend is recommended for development.
 
+### Windows Desktop App (Electron)
+
+Build a standalone Windows desktop application with an NSIS installer:
+
+1. Ensure backend is set up (venv, `.env`, dependencies installed).
+2. Build frontend: `npm run build:frontend`
+3. Run Electron (dev): `npm run electron:dev` – builds frontend and launches the Electron app (uses Python from venv).
+4. Build installer: `.\build.ps1` – creates frontend, optionally builds Python executable via PyInstaller, and produces an NSIS installer in `electron/dist-electron/`.
+
+ChromaDB data is stored in the user's AppData directory (`%APPDATA%\LocalImageSearch\chroma_data`) by default.
+
 1. **Index**: Enter a folder path (e.g. `test_photos`) and click **Index images**. The path is relative to the project root (or `IMAGE_BASE_PATH`).
 2. **Search**: Use **Text search** to type a query, or **Search by image** to upload an image and find similar indexed images.
 3. **Results**: Images are shown in a grid with rank and similarity score; they are loaded via the `/files?path=...` endpoint.
@@ -165,6 +176,10 @@ npm run preview
   - `index.html` – entry HTML.
   - `vite.config.js` – Vite configuration.
   - `package.json` – npm dependencies and scripts.
+- `electron/` – Electron desktop app (main.js, preload.js).
+- `installer/` – Installer resources.
+- `pyinstaller.spec` – PyInstaller config for bundling Python backend.
+- `build.ps1` – Windows build script for desktop app.
 - `key/` – GCP service account JSON (gitignored; add your own).
 - `context_file/embedding_context.md` – reference for Gemini/Vertex embeddings.
 
