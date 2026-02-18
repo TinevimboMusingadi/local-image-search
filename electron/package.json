@@ -1,0 +1,48 @@
+{
+  "name": "local-image-search-electron",
+  "version": "1.0.0",
+  "main": "main.js",
+  "private": true,
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.0"
+  },
+  "build": {
+    "appId": "com.localimagesearch.app",
+    "productName": "Local Image Search",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "files": [
+      "main.js",
+      "preload.js"
+    ],
+    "extraResources": [
+      {
+        "from": "../frontend-vite/dist",
+        "to": "frontend",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "python_backend",
+        "to": "python_backend",
+        "filter": ["**/*"]
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Local Image Search"
+    }
+  }
+}
