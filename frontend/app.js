@@ -17,7 +17,7 @@
   });
 
   function updateThemeIcon(theme) {
-    themeToggle.querySelector('.theme-icon').textContent = theme === 'dark' ? '☀️' : '🌙';
+    themeToggle.querySelector('.theme-icon').textContent = theme === 'dark' ? 'Light' : 'Dark';
   }
 
   // Elements
