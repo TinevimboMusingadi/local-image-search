@@ -1,0 +1,14 @@
+{
+  "name": "local-image-search",
+  "version": "1.0.0",
+  "description": "Local multimodal image search with Vertex AI and ChromaDB",
+  "private": true,
+  "scripts": {
+    "dev:frontend": "cd frontend-vite && npm run dev",
+    "build:frontend": "cd frontend-vite && npm run build",
+    "electron": "cd electron && npx electron .",
+    "electron:dev": "npm run build:frontend && npm run electron",
+    "electron:build": "npm run build:frontend && cd electron && npx electron-builder --win",
+    "build": "powershell -ExecutionPolicy Bypass -File ./build.ps1"
+  }
+}
