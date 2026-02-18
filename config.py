@@ -3,6 +3,7 @@
 import os
 from pathlib import Path
 
+import appdirs
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -12,8 +13,15 @@ GOOGLE_APPLICATION_CREDENTIALS: str = os.getenv("GOOGLE_APPLICATION_CREDENTIALS"
 GCP_PROJECT_ID: str = os.getenv("GCP_PROJECT_ID", "")
 GCP_LOCATION: str = os.getenv("GCP_LOCATION", "us-central1")
 
-# ChromaDB
-CHROMA_PERSIST_DIR: str = os.getenv("CHROMA_PERSIST_DIR", "./chroma_data")
+# ChromaDB: use user data directory when not set via env
+# Windows: %APPDATA%\LocalImageSearch\chroma_data
+# macOS: ~/Library/Application Support/LocalImageSearch/chroma_data
+# Linux: ~/.local/share/LocalImageSearch/chroma_data
+_DEFAULT_CHROMA_DIR = os.path.join(
+    appdirs.user_data_dir("LocalImageSearch", "LocalImageSearch"),
+    "chroma_data",
+)
+CHROMA_PERSIST_DIR: str = os.getenv("CHROMA_PERSIST_DIR", _DEFAULT_CHROMA_DIR)
 
 # Optional: base path for indexing and serving image files (default: project root)
 IMAGE_BASE_PATH: str = os.getenv("IMAGE_BASE_PATH", ".")
