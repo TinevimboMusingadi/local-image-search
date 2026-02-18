@@ -1,0 +1,26 @@
+env
+.env
+chroma_data/
+__pycache__/
+*.pyc
+*.pyo
+context_file/
+key/
+.gitignore
+test_photos/
+testing_2/
+
+# Frontend Vite
+frontend-vite/node_modules/
+frontend-vite/dist/
+frontend-vite/.env
+
+# Electron
+electron/node_modules/
+electron/dist-electron/
+electron/python_backend/
+
+# PyInstaller
+dist/
+build/
+*.spec.bak
