@@ -118,11 +118,14 @@ function createWindow() {
     height: 800,
     minWidth: 800,
     minHeight: 600,
+    show: false,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
     },
   });
+
+  mainWindow.once('ready-to-show', () => mainWindow.show());
 
   const frontendPath = getFrontendPath();
   const url = `file://${frontendPath.replace(/\\/g, '/')}`;
