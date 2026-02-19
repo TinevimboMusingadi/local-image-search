@@ -6,7 +6,6 @@ __pycache__/
 *.pyo
 context_file/
 key/
-.gitignore
 test_photos/
 testing_2/
 
