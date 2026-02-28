@@ -13,9 +13,19 @@
           <h1>Local Image Search</h1>
           <p class="tagline">AI-powered image discovery with Vertex AI & ChromaDB</p>
         </div>
-        <button id="themeToggle" class="theme-toggle" aria-label="Toggle theme">
-          <span class="theme-icon" aria-hidden="true">Dark</span>
-        </button>
+        <div class="header-actions">
+          <button id="fullscreenBtn" class="icon-btn" aria-label="Toggle fullscreen (Ctrl+K)" title="Fullscreen (Ctrl+K)">
+            <svg class="fullscreen-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+            </svg>
+            <svg class="fullscreen-exit-icon" style="display:none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V8m0 18v-3a2 2 0 0 1 2-2h3M3 8h3a2 2 0 0 1 2 2V3"/>
+            </svg>
+          </button>
+          <button id="themeToggle" class="theme-toggle" aria-label="Toggle theme">
+            <span class="theme-label">Dark</span>
+          </button>
+        </div>
       </div>
     </header>
 
@@ -30,9 +40,7 @@
           <p class="hint">Scan a folder and generate embeddings for all images</p>
           <div class="input-group">
             <input type="text" id="folderPath" value="test_photos" placeholder="test_photos" class="input">
-            <button type="button" id="indexBtn" class="btn btn-primary">
-              <span class="btn-text">Index</span>
-            </button>
+            <button type="button" id="indexBtn" class="btn btn-primary">Index</button>
           </div>
           <div id="indexStatus" class="status" aria-live="polite"></div>
         </div>
@@ -45,76 +53,58 @@
         </div>
         <div class="card-body">
           <div class="search-tabs">
-            <button type="button" class="tab-btn active" data-tab="text">
-              <span>Text Search</span>
-            </button>
-            <button type="button" class="tab-btn" data-tab="image">
-              <span>Image Search</span>
-            </button>
-            <button type="button" class="tab-btn" data-tab="similar">
-              <span>Find Similar</span>
-            </button>
+            <button type="button" class="tab-btn active" data-tab="text">Text Search</button>
+            <button type="button" class="tab-btn" data-tab="image">Image Search</button>
+            <button type="button" class="tab-btn" data-tab="similar">Find Similar</button>
           </div>
 
           <!-- Text Search Panel -->
           <div id="textSearchPanel" class="panel active">
             <div class="input-group">
               <input type="text" id="queryText" placeholder="Describe what you're looking for..." class="input input-large">
-              <button type="button" id="searchTextBtn" class="btn btn-primary">
-                <span class="btn-text">Search</span>
-              </button>
+              <button type="button" id="searchTextBtn" class="btn btn-primary">Search</button>
             </div>
-            <div class="search-options">
-              <label class="option-label">
-                <span>Results:</span>
-                <select id="topKText" class="select">
-                  <option value="10">10</option>
-                  <option value="20" selected>20</option>
-                  <option value="50">50</option>
-                </select>
-              </label>
-            </div>
+            <label class="option-label">
+              Results:
+              <select id="topKText" class="select">
+                <option value="10">10</option>
+                <option value="20" selected>20</option>
+                <option value="50">50</option>
+              </select>
+            </label>
           </div>
 
-          <!-- Image Upload Panel -->
+          <!-- Image Search Panel -->
           <div id="imageSearchPanel" class="panel">
             <div class="upload-area" id="uploadArea">
               <input type="file" id="queryImageFile" accept="image/*" class="file-input">
-              <div class="upload-content">
-                <span class="upload-icon" aria-hidden="true">Upload</span>
-                <span class="upload-text">Drop an image or click to browse</span>
-                <span class="upload-hint">Supports JPG, PNG, WebP</span>
-              </div>
+              <span class="upload-icon" aria-hidden="true"></span>
+              <span class="upload-text">Drop an image or click to browse</span>
+              <span class="upload-hint">Supports JPG, PNG, WebP</span>
               <div id="uploadPreview" class="upload-preview"></div>
             </div>
             <div class="input-group">
-              <button type="button" id="searchImageBtn" class="btn btn-primary btn-full">
-                <span class="btn-text">Search by Image</span>
-              </button>
+              <button type="button" id="searchImageBtn" class="btn btn-primary btn-full">Search by Image</button>
             </div>
-            <div class="search-options">
-              <label class="option-label">
-                <span>Results:</span>
-                <select id="topKImage" class="select">
-                  <option value="10">10</option>
-                  <option value="20" selected>20</option>
-                  <option value="50">50</option>
-                </select>
-              </label>
-            </div>
+            <label class="option-label">
+              Results:
+              <select id="topKImage" class="select">
+                <option value="10">10</option>
+                <option value="20" selected>20</option>
+                <option value="50">50</option>
+              </select>
+            </label>
           </div>
 
-          <!-- Similar Search Panel -->
+          <!-- Find Similar Panel -->
           <div id="similarSearchPanel" class="panel">
             <div class="input-group">
               <input type="text" id="similarPath" placeholder="Path to indexed image (e.g. test_photos/image.jpg)" class="input input-large">
-              <button type="button" id="searchSimilarBtn" class="btn btn-primary">
-                <span class="btn-text">Find Similar</span>
-              </button>
+              <button type="button" id="searchSimilarBtn" class="btn btn-primary">Find Similar</button>
             </div>
             <div class="search-options">
               <label class="option-label">
-                <span>Results:</span>
+                Results:
                 <select id="topKSimilar" class="select">
                   <option value="10" selected>10</option>
                   <option value="20">20</option>
@@ -122,7 +112,7 @@
                 </select>
               </label>
               <label class="option-label">
-                <span>Min Score:</span>
+                Min Score:
                 <input type="number" id="minScore" value="0.0" min="0" max="1" step="0.1" class="input input-small">
               </label>
             </div>
@@ -134,14 +124,16 @@
 
       <!-- Results Section -->
       <section class="card results-card">
-        <div class="card-header">
-          <h2>Results</h2>
-          <span id="resultCount" class="badge">0</span>
+        <div class="results-header">
+          <div class="results-header-left">
+            <h2>Results</h2>
+            <span id="resultCount" class="result-count">0</span>
+          </div>
         </div>
-        <div class="card-body">
+        <div class="card-body results-body">
           <div id="resultsGrid" class="results-grid"></div>
           <div id="emptyState" class="empty-state">
-            <span class="empty-icon" aria-hidden="true"></span>
+            <div class="empty-icon"></div>
             <p class="empty-text">No results yet. Start searching!</p>
           </div>
         </div>
