@@ -306,8 +306,11 @@ async def search_by_upload(
 
 
 # Serve frontend static files (mount after routes so /files and /search take precedence)
-# Optional: only mount if frontend/ directory exists (for backward compatibility)
-# The new Vite frontend runs independently on port 5173
-_frontend_dir = Path(__file__).resolve().parent / "frontend"
-if _frontend_dir.is_dir():
+# Prefer frontend-vite/dist (for Electron), fall back to frontend/ (legacy)
+_base = Path(__file__).resolve().parent
+_frontend_vite_dir = _base / "frontend-vite" / "dist"
+_frontend_dir = _base / "frontend"
+if _frontend_vite_dir.is_dir():
+    app.mount("/", StaticFiles(directory=str(_frontend_vite_dir), html=True), name="frontend")
+elif _frontend_dir.is_dir():
     app.mount("/", StaticFiles(directory=str(_frontend_dir), html=True), name="frontend")
