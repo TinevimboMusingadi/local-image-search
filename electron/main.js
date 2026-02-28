@@ -34,7 +34,11 @@ function getFrontendPath() {
 
 function isBackendExe() {
   const backendPath = getBackendPath();
-  return backendPath && backendPath.endsWith('.exe');
+  return (
+    backendPath &&
+    backendPath.endsWith('.exe') &&
+    path.basename(backendPath).startsWith('local-image-search')
+  );
 }
 
 function spawnBackend() {
@@ -48,6 +52,15 @@ function spawnBackend() {
 
     let proc;
 
+    const projectRoot = path.join(__dirname, '..');
+    const venvScripts = path.join(projectRoot, 'env', 'Scripts');
+    const venvBin = process.platform === 'win32' ? venvScripts : path.join(projectRoot, 'env', 'bin');
+    const cleanEnv = {
+      ...process.env,
+      PATH: venvBin + path.delimiter + (process.env.PATH || ''),
+      VIRTUAL_ENV: path.join(projectRoot, 'env'),
+    };
+
     if (isBackendExe()) {
       proc = spawn(backendPath, ['--port', String(PORT)], {
         cwd: path.dirname(backendPath),
@@ -55,8 +68,8 @@ function spawnBackend() {
       });
     } else {
       proc = spawn(backendPath, ['-m', 'uvicorn', 'api:app', '--host', '127.0.0.1', '--port', String(PORT)], {
-        cwd: path.join(__dirname, '..'),
-        env: { ...process.env },
+        cwd: projectRoot,
+        env: cleanEnv,
       });
     }
 
@@ -127,13 +140,8 @@ function createWindow() {
 
   mainWindow.once('ready-to-show', () => mainWindow.show());
 
-  const frontendPath = getFrontendPath();
-  const url = `file://${frontendPath.replace(/\\/g, '/')}`;
-
-  mainWindow.loadURL(url).catch((err) => {
-    console.error('Load error:', err);
-    mainWindow.loadURL(API_URL);
-  });
+  // Load from backend (serves frontend-vite/dist) so CSS/JS assets load correctly
+  mainWindow.loadURL(API_URL);
 
   mainWindow.on('closed', () => {
     mainWindow = null;
